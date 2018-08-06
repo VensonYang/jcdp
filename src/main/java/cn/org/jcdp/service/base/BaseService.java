@@ -7,6 +7,7 @@ import cn.org.jcdp.controller.vo.ResultPage;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * BaseService
@@ -14,15 +15,19 @@ import java.util.List;
  * @author venson
  * @version 20180703
  */
-public interface BaseService<T extends IEntity<ID>,ID extends Serializable>{
+public interface BaseService<Entity extends IEntity<ID>,ID extends Serializable>{
 
-    <S extends T> T save(S s);
+    <S extends Entity> Entity save(S s);
 
-    <S extends T> T update(ID id,S s);
+    <S extends Entity> Optional<Entity> update(ID id, S s);
 
-    T findById(ID id);
+    <S extends Entity> void update(S s,Entity entity);
 
-    List<T> findAll();
+    Optional<Entity> findById(ID id);
+
+    List<Entity> findAll();
+
+    void delete(Entity entity);
 
     void deleteById(ID id);
 

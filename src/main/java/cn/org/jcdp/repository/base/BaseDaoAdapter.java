@@ -129,7 +129,7 @@ public class BaseDaoAdapter<Entity extends IEntity<ID>, ID extends Serializable>
         //分页信息
         Pageable pageable = PageRequest.of(requestPage.getPage() - 1, requestPage.getLimit(), requestPage.getSortDirection(), requestPage.getSorts());
         //查询
-        Page page = this.findAll(where(requestPage.getQueryParam()), pageable);
+        Page page = this.findAll(where(requestPage.getEntity()), pageable);
         return ResultPage.of(page.getContent(), page.getTotalElements(), requestPage.getOffset(), requestPage.getLimit());
     }
 
@@ -292,32 +292,36 @@ public class BaseDaoAdapter<Entity extends IEntity<ID>, ID extends Serializable>
     /**
      * 自动构建分页条件查询
      *
-     * @param queryParams 查询条件
+     * @param entity 查询实体
      */
-    private Specification<Entity> where(Map<String, Object> queryParams) {
+    private Specification<Entity> where(Object entity) {
         return (Root<Entity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (!queryParams.isEmpty()) {
-                for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
-                    String key = entry.getKey();
-                    Object value = entry.getValue();
-                    if (StringUtils.isEmpty(value)) {
-                        continue;
-                    }
-                    Field field = ReflectionUtils.findField(getDomainClass(), key);
-                    if (field == null) {
-                        continue;
-                    }
-                    String lowerKey = key.toLowerCase();
-                    if (field.isAnnotationPresent(Id.class)) {
-                        Predicate equal = cb.equal(root.get(key).as(getIdClass()), value);
-                        predicates.add(equal);
-                    } else if (lowerKey.contains("name") || lowerKey.contains("title")) {
-                        Predicate like = cb.like(root.get(key).as(String.class), value + "%");
-                        predicates.add(like);
-                    } else {
-                        Predicate equal = cb.equal(root.get(key).as(field.getType()), value);
-                        predicates.add(equal);
+            if (entity!=null) {
+                for(Class searchType = entity.getClass();  Object.class != searchType; searchType = searchType.getSuperclass()) {
+                    Field[] fields = searchType.getDeclaredFields();
+                    for(int i=fields.length-1;i>-1;i--){
+                        Field field = fields[i];
+                        if(Modifier.isStatic(field.getModifiers())){
+                            continue;
+                        }
+                        field.setAccessible(true);
+                        Object value = ReflectionUtils.getField(field, entity);
+                        if(StringUtils.isEmpty(value)){
+                            continue;
+                        }
+                        String key=field.getName();
+                        String lowerKey = key.toLowerCase();
+                        if (field.isAnnotationPresent(Id.class)) {
+                            Predicate equal = cb.equal(root.get(key).as(getIdClass()), value);
+                            predicates.add(equal);
+                        } else if (lowerKey.contains("name") || lowerKey.contains("title")) {
+                            Predicate like = cb.like(root.get(key).as(String.class), value + "%");
+                            predicates.add(like);
+                        } else {
+                            Predicate equal = cb.equal(root.get(key).as(field.getType()), value);
+                            predicates.add(equal);
+                        }
                     }
                 }
             }

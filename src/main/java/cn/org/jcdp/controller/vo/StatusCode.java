@@ -7,7 +7,7 @@ package cn.org.jcdp.controller.vo;
  * @version 20180703
  */
 public enum StatusCode {
-    SUCCESS(0),
+    SUCCESS(200),
     ERROR(-1);
     private int code;
 

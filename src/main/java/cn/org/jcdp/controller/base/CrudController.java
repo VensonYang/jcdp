@@ -2,22 +2,15 @@ package cn.org.jcdp.controller.base;
 
 import cn.org.jcdp.controller.vo.RequestPage;
 import cn.org.jcdp.controller.vo.ResponseResult;
-import cn.org.jcdp.domain.base.BaseEntity;
 import cn.org.jcdp.domain.base.IEntity;
 import cn.org.jcdp.service.base.BaseService;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.UUID;
 
 /**
  * CrudController
@@ -25,41 +18,51 @@ import java.util.UUID;
  * @author venson
  * @version 20180703
  */
-public abstract class CrudController<T extends IEntity<ID>, ID extends Serializable> extends BaseController {
+public abstract class  CrudController<Entity extends IEntity<ID>, ID extends Serializable> extends BaseController {
 
     @Autowired
-    private BaseService<T,ID> service;
+    private BaseService<Entity, ID> service;
 
     @ApiOperation("分页查询")
-    @GetMapping(value = "")
-    public ResponseResult page(RequestPage page,HttpServletRequest request) {
-        page.setQueryParam(getQueryParam(request));
+    @GetMapping("")
+    @PreAuthorize("hasAuthority('read')")
+    public ResponseResult page(RequestPage page,Entity entity) {
+        page.setEntity(entity);
         return ResponseResult.success(service.findAllByPage(page));
     }
 
     @ApiOperation("新增")
-    @PostMapping(value = "",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseResult add(T vo) {
-        return ResponseResult.success(service.save(vo));
+    @PostMapping("")
+    @PreAuthorize("hasAuthority('create')")
+    public ResponseResult add(@RequestBody Entity entity) {
+        return ResponseResult.success(service.save(entity), HttpStatus.CREATED);
     }
 
     @ApiOperation("修改")
-    @PutMapping(value ="/{id}")
-    public ResponseResult update(@PathVariable("id") ID id,T vo) {
-        return ResponseResult.success(service.update(id, vo));
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('write')")
+    public ResponseResult update(@PathVariable("id") ID id, @RequestBody Entity entity) {
+        return service.findById(id).map(t -> {
+            service.update(entity, t);
+            return ResponseResult.success(t);
+        }).orElse(ResponseResult.empty());
     }
 
     @ApiOperation("获取")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('read')")
     public ResponseResult get(@PathVariable("id") ID id) {
-        return ResponseResult.success(service.findById(id));
+        return service.findById(id).map(t -> ResponseResult.success(t)).orElse(ResponseResult.empty());
     }
 
     @ApiOperation("删除")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('delete')")
     public ResponseResult delete(@PathVariable("id") ID id) {
-        service.deleteById(id);
-        return ResponseResult.success();
+        return service.findById(id).map(t -> {
+            service.delete(t);
+            return ResponseResult.success(t);
+        }).orElse(ResponseResult.empty());
     }
 
 }

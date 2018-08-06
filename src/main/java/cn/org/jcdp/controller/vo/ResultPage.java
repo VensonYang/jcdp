@@ -16,10 +16,6 @@ public class ResultPage implements Serializable {
     private int offset;
     private int limit;
 
-    private <T extends Collection> ResultPage(T content, long total) {
-        this.content = content;
-        this.total = total;
-    }
 
     private <T extends Collection> ResultPage(T content, long total, int offset, int limit) {
         this.content = content;
@@ -29,42 +25,46 @@ public class ResultPage implements Serializable {
     }
 
     public static <T extends Collection> ResultPage of(Collection<T> content, long total) {
-        return new ResultPage(content, total);
+        return of(content, total, 0, 10);
     }
 
     public static <T extends Collection> ResultPage of(Collection<T> content, long total, int offset, int limit) {
-        return new ResultPage(content, total,offset,limit);
+        return new ResultPage(content, total, offset, limit);
     }
 
     public Object getContent() {
         return content;
     }
 
-    public <T extends Collection> void setContent(T content) {
+    public <T extends Collection> ResultPage setContent(T content) {
         this.content = content;
+        return this;
     }
 
     public long getTotal() {
         return total;
     }
 
-    public void setTotal(long total) {
+    public ResultPage setTotal(long total) {
         this.total = total;
+        return this;
     }
 
     public int getOffset() {
         return offset;
     }
 
-    public void setOffset(int offset) {
+    public ResultPage setOffset(int offset) {
         this.offset = offset;
+        return this;
     }
 
     public int getLimit() {
         return limit;
     }
 
-    public void setLimit(int limit) {
+    public ResultPage setLimit(int limit) {
         this.limit = limit;
+        return this;
     }
 }

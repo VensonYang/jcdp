@@ -45,7 +45,7 @@ public class StudentController extends CrudController<Student,Integer> {
     @PutMapping(value = "/executeUpdate")
     public ResponseResult executeUpdate(String name) {
         studentService.executeUpdate(name);
-        return ResponseResult.success();
+        return ResponseResult.blank();
     }
 
 

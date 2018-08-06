@@ -1,6 +1,10 @@
 package cn.org.jcdp.controller.base;
 
+import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
+
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,4 +25,7 @@ public abstract class BaseController {
         }
         return param;
     }
+
+
+
 }

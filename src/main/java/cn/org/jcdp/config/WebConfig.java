@@ -12,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
+import javax.servlet.ServletContext;
 import java.util.List;
 
 /**
@@ -53,19 +54,22 @@ public class WebConfig extends WebMvcConfigurationSupport {
         registry.addInterceptor(new CommInterceptor());
     }
 
-    /**
-     * 序列换成json时,将所有的long变成string
-     * 因为js中得数字类型不能包含所有的java long值
-     */
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        MappingJackson2HttpMessageConverter jackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
-        ObjectMapper objectMapper = new ObjectMapper();
+    protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        //序列换成json时,将所有的long变成string
+        MappingJackson2HttpMessageConverter jackson2HttpMessageConverter=(MappingJackson2HttpMessageConverter)converters.get(7);
+        ObjectMapper objectMapper=jackson2HttpMessageConverter.getObjectMapper();
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
         simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
         objectMapper.registerModule(simpleModule);
-        jackson2HttpMessageConverter.setObjectMapper(objectMapper);
-        converters.add(jackson2HttpMessageConverter);
+        objectMapper.getRegisteredModuleIds();
+    }
+
+
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        super.setServletContext(servletContext);
     }
 }

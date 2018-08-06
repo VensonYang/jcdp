@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * BaseServiceAdapter
@@ -16,45 +17,54 @@ import java.util.List;
  * @author venson
  * @version 20180703
  */
-public abstract class BaseServiceAdapter<T extends IEntity<ID>, ID extends Serializable> implements BaseService<T, ID> {
+public abstract class BaseServiceAdapter<Entity extends IEntity<ID>, ID extends Serializable> implements BaseService<Entity, ID> {
 
 
     @Autowired
-    protected BaseDao<T, ID> baseDao;
-    
+    protected BaseDao<Entity, ID> baseDao;
+
     @Override
-    public <S extends T> T save(S s) {
+    public <S extends Entity> Entity save(S s) {
         baseDao.store(s);
         return s;
     }
 
     @Override
-    public <S extends T> T update(ID id, S s) {
-        return baseDao.findById(id).map(t -> {
-            BeanUtils.copyProperties(s, t);
-            baseDao.update(t);
-            return t;
-        }).orElse(null);
+    public <S extends Entity> Optional<Entity> update(ID id, S s) {
+        Optional<Entity> optional = findById(id);
+        optional.ifPresent(entity -> update(s, entity));
+        return optional;
     }
 
     @Override
-    public T findById(ID id) {
-        return baseDao.findById(id).orElse(null);
+    public <S extends Entity> void update(S s, Entity entity) {
+        BeanUtils.copyProperties(s, entity);
+        baseDao.update(entity);
     }
 
     @Override
-    public List<T> findAll() {
+    public Optional<Entity> findById(ID id) {
+        return baseDao.findById(id);
+    }
+
+    @Override
+    public List<Entity> findAll() {
         return baseDao.findAll();
     }
 
     @Override
+    public void delete(Entity entity) {
+        baseDao.delete(entity);
+    }
+
+    @Override
     public void deleteById(ID id) {
-        baseDao.findById(id).ifPresent(s -> baseDao.delete(s));
+        findById(id).ifPresent(entity-> delete(entity));
     }
 
     @Override
     public ResultPage findAllByPage(RequestPage page) {
-      return baseDao.findAllByPage(page);
+        return baseDao.findAllByPage(page);
     }
 
 }

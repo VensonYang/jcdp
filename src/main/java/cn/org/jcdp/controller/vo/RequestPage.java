@@ -3,12 +3,9 @@ package cn.org.jcdp.controller.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
-import springfox.documentation.annotations.ApiIgnore;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * RequestPage
@@ -23,7 +20,7 @@ public class RequestPage implements Serializable{
     private int offset = 0;
     private String sort;
     private String direction;
-    private Map<String,Object> queryParam;
+    private Object entity;
 
     public int getLimit() {
         return limit;
@@ -58,13 +55,13 @@ public class RequestPage implements Serializable{
         this.direction = direction;
     }
 
-    public void setQueryParam(Map<String, Object> queryParam) {
-        this.queryParam = queryParam;
+    public void setEntity(Object entity) {
+        this.entity = entity;
     }
 
     @ApiModelProperty(hidden = true)
-    public Map<String, Object> getQueryParam() {
-        return queryParam;
+    public Object getEntity() {
+        return entity;
     }
 
     @ApiModelProperty(hidden = true)

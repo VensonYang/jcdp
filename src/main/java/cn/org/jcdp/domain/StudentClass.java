@@ -14,9 +14,8 @@ public class StudentClass extends BaseEntity<String> {
 
     private static final long serialVersionUID = -7859825734000896158L;
 
-    @OneToOne
-    @JoinColumn(name = "teacher_id")
-    private Teacher teacher;
+    @Column(name = "teacher_id")
+    private Long teacher;
 
     @Column(name = "class_name")
     private String className;
@@ -29,11 +28,11 @@ public class StudentClass extends BaseEntity<String> {
         this.className = className;
     }
 
-    public Teacher getTeacher() {
+    public Long getTeacher() {
         return teacher;
     }
 
-    public void setTeacher(Teacher teacher) {
+    public void setTeacher(Long teacher) {
         this.teacher = teacher;
     }
 }
